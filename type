@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Typing Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f8f8ff;
+      padding: 50px;
+    }
+
+    #word {
+      font-size: 2em;
+      margin: 20px;
+    }
+
+    #input {
+      font-size: 1.5em;
+      padding: 10px;
+    }
+
+    #score,
+    #time {
+      font-size: 1.2em;
+      margin: 10px;
+    }
+
+    #game-over {
+      font-size: 1.5em;
+      color: red;
+      margin-top: 20px;
+    }
+
+    #amazing {
+      font-size: 1.5em;
+      color: rgb(255, 0, 162);
+      margin-top: 10px;
+    }
+
+    #great {
+      font-size: 1.5em;
+      color: rgb(0, 166, 255);
+      margin-top: 10px;
+    }
+
+    #nicetry {
+      font-size: 1.5em;
+      color: rgb(255, 128, 0);
+      margin-top: 10px;
+    }
+
+    #toofast {
+      font-size: 1.5em;
+      color: rgb(149, 0, 255);
+      margin-top: 10px;
+    }
+
+    #start-button,
+    #retry-button {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    #input-section {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Gala's Typing Game</h1>
+
+  <button id="start-button">Start Game</button>
+
+  <div id="input-section">
+    <div id="word">Press Start!</div>
+    <input id="input" type="text" autocomplete="off" />
+    <div id="score">Score: 0</div>
+    <div id="time">Time: 60</div>
+    <div id="amazing"></div>
+    <div id="great"></div>
+    <div id="nicetry"></div>
+    <div id="toofast"></div>
+    <div id="game-over"></div>
+    <button id="retry-button" style="display:none;">Try Again</button>
+  </div>
+
+  <script>
+    const wordPool = [
+      // Colors
+      "red", "blue", "green", "yellow", "pink", "orange", "purple", "black", "white", "brown",
+      // Animals
+      "cat", "dog", "rabbit", "mouse", "horse", "cow", "pig", "sheep", "goat", "lion", "tiger", "bear", "zebra", "monkey", "elephant",
+      // Months (Capitalized)
+      "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
+      // Days of the Week (Capitalized)
+      "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+      // Extras to hit 50
+      "cloud", "sun", "rain", "wind", "tree", "flower"
+    ];
+
+    let availableWords = [];
+    let usedWords = [];
+    let score = 0;
+    let time = 45;
+    let currentWord = "";
+    let timerInterval;
+
+    const wordDisplay = document.getElementById("word");
+    const input = document.getElementById("input");
+    const scoreDisplay = document.getElementById("score");
+    const timeDisplay = document.getElementById("time");
+    const gameOver = document.getElementById("game-over");
+    const amazing = document.getElementById("amazing");
+    const toofast = document.getElementById("toofast")
+    const great = document.getElementById("great")
+    const nicetry = document.getElementById("nicetry")
+    const startButton = document.getElementById("start-button");
+    const retryButton = document.getElementById("retry-button");
+    const inputSection = document.getElementById("input-section");
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function refillWordList() {
+      availableWords = shuffle([...wordPool]);
+      usedWords = [];
+    }
+
+    function getNextWord() {
+      if (availableWords.length === 0) {
+        refillWordList();
+      }
+
+      const nextWord = availableWords.pop();
+      usedWords.push(nextWord);
+      return nextWord;
+    }
+
+    function showNewWord() {
+      currentWord = getNextWord();
+      wordDisplay.textContent = currentWord;
+      input.value = "";
+    }
+
+    function startGame() {
+      score = 0;
+      time = 45
+      scoreDisplay.textContent = "Score: 0";
+      timeDisplay.textContent = "Time: " + time;
+      gameOver.textContent = "";
+      amazing.textContent = "";
+      toofast.textContent = "";
+      great.textContent = "";
+      nicetry.textContent = "";
+      input.disabled = false;
+      input.value = "";
+      retryButton.style.display = "none";
+      startButton.style.display = "none";
+      inputSection.style.display = "block";
+      refillWordList();
+      showNewWord();
+      input.focus();
+
+      timerInterval = setInterval(updateTime, 1000);
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      input.disabled = true;
+      gameOver.textContent = "Time's up! Final Score: " + score;
+
+      if (score > 35) {
+        toofast.textContent = "Hey! You're way too fast!"
+      }
+      else if (score > 25) {
+        amazing.textContent = "Amazing job!";
+      }
+      else if (score > 15) {
+        great.textContent = "Great job!"
+      }
+      else if (score > 5) {
+        nicetry.textContent = "Nice try!"
+      }
+
+      retryButton.style.display = "inline-block";
+    }
+
+    function updateTime() {
+      time--;
+      timeDisplay.textContent = "Time: " + time;
+      if (time === 0) {
+        endGame();
+      }
+    }
+
+    input.addEventListener("input", function () {
+      if (input.value === currentWord) {
+        score++;
+        scoreDisplay.textContent = "Score: " + score;
+        showNewWord();
+      }
+    });
+
+    startButton.addEventListener("click", startGame);
+    retryButton.addEventListener("click", startGame);
+  </script>
+</body>
+
+</html>
